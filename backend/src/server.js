@@ -63,6 +63,21 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Serve Static Frontend Assets in Production
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+
+app.get('*', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.resolve(frontendDist, 'index.html'), (err) => {
+    if (err) {
+      res.status(200).send('AgriSmart API is live. Build frontend to view web client.');
+    }
+  });
+});
+
 // Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
