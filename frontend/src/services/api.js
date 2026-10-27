@@ -62,3 +62,4 @@ export const getAdminUsers = () => api.get('/admin/users');
 export const updateUserRole = (id, role) => api.put(`/admin/users/${id}/role`, { role });
 
 export default api;
+
