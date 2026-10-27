@@ -1,0 +1,102 @@
+:root {
+  --primary-green: #198754;
+  --primary-dark: #146c43;
+  --primary-light: #d1e7dd;
+  --accent-gold: #ffc107;
+  --surface-bg: #f8fafc;
+  --card-border: #e2e8f0;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--surface-bg);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.text-primary-custom {
+  color: var(--primary-green) !important;
+}
+
+.bg-primary-custom {
+  background-color: var(--primary-green) !important;
+  color: white;
+}
+
+.bg-primary-soft {
+  background-color: #e8f5e9 !important;
+  color: #1b5e20 !important;
+}
+
+.bg-warning-soft {
+  background-color: #fff9db !important;
+  color: #8f6b00 !important;
+}
+
+.bg-danger-soft {
+  background-color: #ffebee !important;
+  color: #b71c1c !important;
+}
+
+.bg-info-soft {
+  background-color: #e1f5fe !important;
+  color: #01579b !important;
+}
+
+.badge-soft {
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.card {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: var(--primary-green) !important;
+}
+
+.table th {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background-color: #f8fafc;
+}

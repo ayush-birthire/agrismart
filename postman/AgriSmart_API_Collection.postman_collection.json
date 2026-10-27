@@ -1,0 +1,231 @@
+{
+  "info": {
+    "_postman_id": "agrismart-api-v1",
+    "name": "AgriSmart REST API Collection",
+    "description": "Comprehensive Postman test collection for the AgriSmart Smart Agricultural Management Platform (MERN Stack).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. System Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication & RBAC",
+      "item": [
+        {
+          "name": "Register Farmer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ramesh Patel\",\n  \"email\": \"farmer@agrismart.org\",\n  \"password\": \"farmerpassword123\",\n  \"role\": \"farmer\",\n  \"phone\": \"+91 91234 56789\",\n  \"location\": {\n    \"district\": \"Khargone\",\n    \"state\": \"Madhya Pradesh\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login Farmer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"farmer@agrismart.org\",\n  \"password\": \"farmerpassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@agrismart.org\",\n  \"password\": \"adminpassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Farm Profile Management",
+      "item": [
+        {
+          "name": "Get All Farms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        },
+        {
+          "name": "Create Farm Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Green Horizon Estate\",\n  \"location\": {\n    \"district\": \"Khargone\",\n    \"state\": \"Madhya Pradesh\"\n  },\n  \"totalArea\": { \"value\": 10, \"unit\": \"Acres\" },\n  \"soilType\": \"Black\",\n  \"irrigationType\": \"Drip\",\n  \"cropsGrown\": [\"Wheat\", \"Cotton\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/farms", "host": ["{{baseUrl}}"], "path": ["farms"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Crop Monitoring",
+      "item": [
+        {
+          "name": "Get Crops",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/crops", "host": ["{{baseUrl}}"], "path": ["crops"] }
+          }
+        },
+        {
+          "name": "Log Field Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activityType\": \"Irrigation\",\n  \"description\": \"First drip irrigation flush applied\",\n  \"cost\": 650\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/crops/{{cropId}}/activity", "host": ["{{baseUrl}}"], "path": ["crops", "{{cropId}}", "activity"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Soil Health Analysis",
+      "item": [
+        {
+          "name": "Get Soil Reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/soil", "host": ["{{baseUrl}}"], "path": ["soil"] }
+          }
+        },
+        {
+          "name": "Submit Soil Diagnostic Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farm\": \"{{farmId}}\",\n  \"phLevel\": 6.8,\n  \"nitrogen\": 320,\n  \"phosphorus\": 22,\n  \"potassium\": 195,\n  \"organicCarbon\": 0.75,\n  \"moisture\": 25\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/soil", "host": ["{{baseUrl}}"], "path": ["soil"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Weather & Pest Alerts",
+      "item": [
+        {
+          "name": "Get Agricultural Weather",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/weather?district=Indore", "host": ["{{baseUrl}}"], "path": ["weather"], "query": [{ "key": "district", "value": "Indore" }] }
+          }
+        },
+        {
+          "name": "Get Active Pest Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/weather/pest-alerts", "host": ["{{baseUrl}}"], "path": ["weather", "pest-alerts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Resource Marketplace & Orders",
+      "item": [
+        {
+          "name": "Get Catalog Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/resources", "host": ["{{baseUrl}}"], "path": ["resources"] }
+          }
+        },
+        {
+          "name": "Get Farmer Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin Command",
+      "item": [
+        {
+          "name": "Get System Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/stats", "host": ["{{baseUrl}}"], "path": ["admin", "stats"] }
+          }
+        },
+        {
+          "name": "Get All Users Directory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "agrismart-platform",
+  "version": "1.0.0",
+  "description": "AgriSmart - Smart Agricultural Management Platform (MERN Stack)",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend",
+    "start": "node run-app.js",
+    "seed": "npm run seed --prefix backend"
+  },
+  "keywords": ["agritech", "mern", "smart-farming", "react", "express", "mongodb", "nodejs"],
+  "author": "Ayush Birthire",
+  "license": "MIT"
+}
+
