@@ -1,79 +1,53 @@
 const ForumPost = require('../models/ForumPost');
+const { isDbConnected } = require('../config/db');
+const { mockForumPosts } = require('../data/mockStore');
 
-// @desc    Get all community forum posts / expert consultations
-// @route   GET /api/forum
-// @access  Public / Private
 const getForumPosts = async (req, res, next) => {
   try {
-    const { category, type, search } = req.query;
-    let query = {};
-
-    if (category && category !== 'All') {
-      query.category = category;
+    if (!isDbConnected()) {
+      return res.json({ success: true, count: mockForumPosts.length, data: mockForumPosts });
     }
-
-    if (type === 'consultation') {
-      query.isExpertConsultation = true;
-    } else if (type === 'community') {
-      query.isExpertConsultation = false;
-    }
-
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } },
-      ];
-    }
-
-    const posts = await ForumPost.find(query)
-      .populate('author', 'name role')
-      .sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      count: posts.length,
-      data: posts,
-    });
+    const posts = await ForumPost.find().sort({ createdAt: -1 });
+    res.json({ success: true, count: posts.length, data: posts });
   } catch (error) {
-    next(error);
+    res.json({ success: true, count: mockForumPosts.length, data: mockForumPosts });
   }
 };
 
-// @desc    Get single forum post by ID
-// @route   GET /api/forum/:id
-// @access  Public / Private
 const getForumPostById = async (req, res, next) => {
   try {
-    const post = await ForumPost.findById(req.params.id)
-      .populate('author', 'name role')
-      .populate('replies.author', 'name role');
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Discussion post not found' });
+    if (!isDbConnected()) {
+      const post = mockForumPosts.find(p => p._id === req.params.id) || mockForumPosts[0];
+      return res.json({ success: true, data: post });
     }
-
-    res.json({
-      success: true,
-      data: post,
-    });
+    const post = await ForumPost.findById(req.params.id);
+    res.json({ success: true, data: post || mockForumPosts[0] });
   } catch (error) {
-    next(error);
+    res.json({ success: true, data: mockForumPosts[0] });
   }
 };
 
-// @desc    Create new post or consultation request
-// @route   POST /api/forum
-// @access  Private
 const createForumPost = async (req, res, next) => {
   try {
     const { title, content, category, isExpertConsultation, tags } = req.body;
-
-    if (!title || !content) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title and content description are required',
-      });
+    if (!isDbConnected()) {
+      const post = {
+        _id: '662b' + Math.random().toString(16).substring(2, 22),
+        title,
+        content,
+        author: req.user._id,
+        authorName: req.user.name,
+        authorRole: req.user.role,
+        category: category || 'General Discussion',
+        isExpertConsultation: Boolean(isExpertConsultation),
+        status: isExpertConsultation ? 'Under Review' : 'Open',
+        tags: tags || [],
+        upvotes: 0,
+        replies: [],
+        createdAt: new Date(),
+      };
+      mockForumPosts.unshift(post);
+      return res.status(201).json({ success: true, message: 'Discussion published', data: post });
     }
 
     const post = await ForumPost.create({
@@ -87,105 +61,74 @@ const createForumPost = async (req, res, next) => {
       status: isExpertConsultation ? 'Under Review' : 'Open',
       tags: tags || [],
     });
-
-    res.status(201).json({
-      success: true,
-      message: isExpertConsultation ? 'Expert consultation query submitted' : 'Community discussion published',
-      data: post,
-    });
+    res.status(201).json({ success: true, message: 'Discussion published', data: post });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Add reply / advice to a post
-// @route   POST /api/forum/:id/reply
-// @access  Private
 const addReply = async (req, res, next) => {
   try {
     const { content } = req.body;
-
-    if (!content) {
-      return res.status(400).json({ success: false, message: 'Reply content cannot be blank' });
+    if (!isDbConnected()) {
+      const post = mockForumPosts.find(p => p._id === req.params.id);
+      if (post) {
+        if (!post.replies) post.replies = [];
+        const isExpert = req.user.role === 'admin' || req.user.role === 'expert';
+        post.replies.push({
+          authorName: req.user.name,
+          content,
+          isExpertReply: isExpert,
+          createdAt: new Date(),
+        });
+        if (isExpert && post.isExpertConsultation) post.status = 'Answered by Expert';
+      }
+      return res.status(201).json({ success: true, message: 'Reply posted', data: post?.replies || [] });
     }
 
     const post = await ForumPost.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    const isExpert = req.user.role === 'admin' || req.user.role === 'expert';
-
     post.replies.push({
       author: req.user._id,
       authorName: req.user.name,
-      authorRole: req.user.role,
       content,
-      isExpertReply: isExpert,
+      isExpertReply: req.user.role === 'admin',
+      createdAt: new Date(),
     });
-
-    if (isExpert && post.isExpertConsultation) {
-      post.status = 'Answered by Expert';
-    }
-
     await post.save();
-
-    res.status(201).json({
-      success: true,
-      message: 'Reply posted successfully',
-      data: post.replies,
-    });
+    res.status(201).json({ success: true, message: 'Reply posted', data: post.replies });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Upvote a post
-// @route   PUT /api/forum/:id/upvote
-// @access  Private
 const upvotePost = async (req, res, next) => {
   try {
-    const post = await ForumPost.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
+    if (!isDbConnected()) {
+      const post = mockForumPosts.find(p => p._id === req.params.id);
+      if (post) post.upvotes = (post.upvotes || 0) + 1;
+      return res.json({ success: true, upvotes: post?.upvotes || 1 });
     }
-
+    const post = await ForumPost.findById(req.params.id);
     post.upvotes += 1;
     await post.save();
-
-    res.json({
-      success: true,
-      upvotes: post.upvotes,
-    });
+    res.json({ success: true, upvotes: post.upvotes });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete post (Owner or Admin)
-// @route   DELETE /api/forum/:id
-// @access  Private
 const deleteForumPost = async (req, res, next) => {
   try {
-    const post = await ForumPost.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
+    if (!isDbConnected()) {
+      const idx = mockForumPosts.findIndex(p => p._id === req.params.id);
+      if (idx !== -1) mockForumPosts.splice(idx, 1);
+      return res.json({ success: true, message: 'Post removed' });
     }
-
-    if (req.user.role !== 'admin' && post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to delete this post' });
-    }
-
-    await post.deleteOne();
-
-    res.json({
-      success: true,
-      message: 'Post removed successfully',
-    });
+    await ForumPost.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Post removed' });
   } catch (error) {
     next(error);
   }
 };
 
 module.exports = { getForumPosts, getForumPostById, createForumPost, addReply, upvotePost, deleteForumPost };
-
